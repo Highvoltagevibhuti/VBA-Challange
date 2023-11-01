@@ -1,0 +1,162 @@
+Sub StockMarket():
+'Declare and set worksheet
+Dim ws As Worksheet
+
+'Loop through all worksheets
+For Each ws In Worksheets
+
+
+'Creating column headings
+
+ws.Range("I1").Value = "Ticker"
+ws.Range("J1").Value = "Yearly Change"
+ws.Range("K1").Value = "Percent Change"
+ws.Range("L1").Value = "Total Stock Volume"
+
+ws.Range("P1").Value = "Ticker"
+ws.Range("Q1").Value = "Value"
+ws.Range("O2").Value = "Greatest % Increase"
+ws.Range("O3").Value = "Greatest % Decrease"
+ws.Range("O4").Value = "Greatest Total Volume"
+
+ws.Columns("I:Q").AutoFit
+
+'Define Ticker variable
+Dim TickerRow As Integer
+TickerRow = 1
+Dim Ticker As String
+Ticker = " "
+
+
+'Set i and last row for worksheet
+Dim Lastrow As Long
+Dim i As Long
+
+
+'Define Lastrow of worksheet
+Lastrow = ws.Cells(Rows.Count, 1).End(xlUp).Row + 1
+
+
+
+' Extarcting Ticker symbol
+For i = 2 To Lastrow
+
+If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+TickerRow = TickerRow + 1
+Ticker = ws.Cells(i, 1).Value
+ws.Cells(TickerRow, "I").Value = Ticker
+
+End If
+
+Next i
+
+'Extracting Total stock volume
+
+Dim j As Long
+Dim Total_Stock_Volume As Double
+Total_Stock_Volume = 0
+Dim TotalStockVolumeRow As Integer
+TotalStockVolumeRow = 2
+
+For j = 2 To Lastrow + 1
+If ws.Cells(j, 1).Value = ws.Cells(j - 1, 1).Value And j > 2 Then
+
+Total_Stock_Volume = Total_Stock_Volume + ws.Cells(j, 7).Value
+
+ElseIf ws.Cells(j, 1).Value <> ws.Cells(j - 1, 1).Value And j > 2 Then
+
+ws.Cells(TotalStockVolumeRow, "L").Value = Total_Stock_Volume
+TotalStockVolumeRow = TotalStockVolumeRow + 1
+Total_Stock_Volume = 0
+
+Else
+Total_Stock_Volume = Total_Stock_Volume + ws.Cells(j, 7).Value
+
+End If
+
+Next j
+
+
+'Extracting yearly change
+Dim k As Long
+'Set new variables for prices and percent changes
+Dim open_price As Double
+Dim close_price As Double
+Dim yearly_change As Double
+Dim percent_change As Double
+Dim rowindex As Integer
+rowindex = 2
+
+
+For k = 2 To Lastrow
+If ws.Cells(k, 1).Value <> ws.Cells(k + 1, 1).Value Then
+close_price = ws.Cells(k, 6).Value
+ ElseIf ws.Cells(k, 1).Value <> ws.Cells(k - 1, 1).Value Then
+ open_price = ws.Cells(k, 3).Value
+
+ End If
+ 
+ If open_price > 0 And close_price > 0 Then
+yearly_change = close_price - open_price
+ws.Cells(rowindex, 10).Value = yearly_change
+percent_change = (yearly_change / open_price) * 100
+ws.Cells(rowindex, 11).Value = percent_change
+open_price = 0
+close_price = 0
+rowindex = rowindex + 1
+End If
+
+Next k
+
+ 
+ 
+
+'Greatest total volume value and greatest % increase and decrease
+ws.Range("Q4") = WorksheetFunction.Max(Columns("L"))
+ws.Range("Q3") = WorksheetFunction.Min(Columns("K"))
+ws.Range("Q2") = WorksheetFunction.Max(Columns("K"))
+
+'Ticker for Greatest total volumn and % increse/decrease
+For i = 2 To Lastrow
+If ws.Range("Q4").Value = ws.Cells(i, 12).Value Then
+ws.Range("P4").Value = ws.Cells(i, 9).Value
+ElseIf ws.Range("Q3").Value = ws.Cells(i, 11).Value Then
+ws.Range("P3").Value = ws.Cells(i, 9).Value
+ElseIf ws.Range("Q2") = ws.Cells(i, 11).Value Then
+ws.Range("P2").Value = ws.Cells(i, 9).Value
+
+End If
+Next i
+
+'conditional formating for %change: postive is green, negative is red
+'green = 10
+'red = 3
+Dim conditionallastrow As Integer
+conditionallastrow = ws.Cells(Rows.Count, 11).End(xlUp).Row + 1
+
+
+For i = 2 To conditionallastrow
+If ws.Cells(i, 11).Value > 0 Then
+ws.Cells(i, 11).Interior.ColorIndex = 10
+Else
+ws.Cells(i, 11).Interior.ColorIndex = 3
+End If
+Next i
+
+'conditional formating for yearly change: postive is green, negative is red
+Dim yearlychangelastrow As Integer
+yearlychangelastrow = ws.Cells(Rows.Count, 10).End(xlUp).Row + 1
+
+For i = 2 To yearlychangelastrow
+If ws.Cells(i, 10).Value > 0 Then
+ws.Cells(i, 10).Interior.ColorIndex = 10
+Else
+ws.Cells(i, 10).Interior.ColorIndex = 3
+End If
+Next i
+
+
+
+Next ws
+
+End Sub
